@@ -67,36 +67,36 @@ function CreateContactItem(Clients_contacts, type=null, value=null) {
 };
 
 export function AddNewClientForm(){
-const NewClientContainer = document.getElementById('new-client-id');
-    NewClientContainer.setAttribute('style', 'display:block;');
+const newClientContainer = document.getElementById('new-client-id');
+    newClientContainer.setAttribute('style', 'display:block;');
     Shadow();
 
-    const NewClientExit = document.getElementById('new-client__exit-btn-id');
-    const NewClientCancel = document.getElementById('new-client-cancel-btn');
+    const newContactBtn = document.getElementById('new-client-contacts__btn');
+    const newClientsContacts = document.getElementById('new-client-contacts__items');
+    const newClientContactErrors = document.getElementById('new-client-bottom__errors');
+
+    function add_contact(){
+        if (newClientsContacts.childNodes.length <= 12) {
+            CreateContactItem(newClientsContacts);
+        }else {
+    
+            newClientContactErrors.textContent = 'Ошибка: Вы не можете добавить более 10 контактов!';
+            newClientContactErrors.setAttribute('style', 'display:block;')
+        }
+    }
+    newContactBtn.addEventListener('click', add_contact);
+
+    const newClientExit = document.getElementById('new-client__exit-btn-id');
+    const newClientCancel = document.getElementById('new-client-cancel-btn');
     const ContactsList = document.getElementById('contacts-list');
-    [NewClientExit, NewClientCancel].forEach(function(elem) {
+    [newClientExit, newClientCancel].forEach(function(elem) {
         elem.addEventListener('click', ()=> {
-        NewClientContainer.setAttribute('style', 'display:none;');
+        newClientContainer.setAttribute('style', 'display:none;');
+        newContactBtn.removeEventListener('click', add_contact);
+        newClientContactErrors.innerHTML = '';
         RemoveShadow();
-        ContactsList.innerHTML = "";
         });
     });
-
-    const NewContactBtn = document.getElementById('new-client-contacts__btn');
-    NewContactBtn.addEventListener('click', ()=> {
-        const NewClientsContacts = document.getElementById('new-client-contacts__items');
-
-        if (NewClientsContacts.childNodes.length <= 12) {
-            CreateContactItem(NewClientsContacts);
-        }else {
-            const NewClientContactErrors = document.getElementById('new-client-bottom__errors');
-            NewClientContactErrors.textContent = 'Ошибка: Вы не можете добавить более 10 контактов!';
-            NewClientContactErrors.setAttribute('style', 'display:block;')
-        }
-
-
-
-    })
 };
 
 

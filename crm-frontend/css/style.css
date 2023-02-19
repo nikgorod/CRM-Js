@@ -1,5 +1,12 @@
+html {
+    height: 100%;
+  }
+
+
 body {
     font-family: 'OpenSans';
+    position: relative;
+    min-height: 100%;
 }
 @font-face {
     font-family: 'OpenSans';
@@ -585,6 +592,13 @@ animation: preloader-5-spin 1.5s linear infinite;
         max-width: 100px;
         background-position: 80px 20px;
     }
+
+    .name_td,
+    .created_td,
+    .updated_td,
+    .contacts_td {
+        padding-left: 10px;
+    }
 }
 
 @media (max-width:769px) {
@@ -593,6 +607,13 @@ animation: preloader-5-spin 1.5s linear infinite;
     #remove-client,
     #change-client-id{
         left: 20%;
+    }
+
+    .clients-table {    
+        display: block;
+        table-layout: fixed;
+        overflow-x: auto;
+        padding-top: 5px;
     }
 }
 
@@ -603,12 +624,7 @@ animation: preloader-5-spin 1.5s linear infinite;
         padding-top: 30px
     }
 
-    .clients-table {    
-        display: block;
-        table-layout: fixed;
-        overflow-x: auto;
-        padding-top: 5px;
-    }
+
 
     .main__title{
         font-size: 18px;
@@ -654,4 +670,27 @@ animation: preloader-5-spin 1.5s linear infinite;
     .new-client-contacts__input_alert{
         width: 120px;
     }
+
+    #name_sort{
+        background-position: 85px 20px;
+    }
+
+    #created_btn{
+        background-position: 45px 25px;
+    }
+
+    #updated_btn{
+        background-position: 70px 20px;
+    }
+
+    #surname_th{
+        text-align: center;
+    }
+
+    #date_th,
+    #update_th,
+    #contacts_th{
+        padding-left: 10px;
+    }
+
 }

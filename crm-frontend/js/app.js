@@ -1,99 +1,86 @@
-import {AddNewClientForm, CreateClientsTable} from './createDOM.js';
-import {PostClient, GetClients, GetClient} from './api.js';
+import {addNewClientForm, createClientsTable} from './createDOM.js';
+import {getClients, getClient} from './api.js';
 
 document.addEventListener('DOMContentLoaded', ()=> {
 
-    function CreateApp(){
+    function createApp(){
         window.addEventListener('hashchange',() =>{
-            GetClient(location.hash.substring(1));
+            getClient(location.hash.substring(1));
 
         });
 
-        GetClients();
+        getClients();
 
-        const AddNewClientBtn = document.getElementById('add_new_client');
+        const addNewClientBtn = document.getElementById('add_new_client');
         
-        AddNewClientBtn.addEventListener('click', ()=> {
-            AddNewClientForm();
-
-            const SaveClientBtn = document.getElementById('new-client-save-btn');
-
-            SaveClientBtn.addEventListener('click', ()=> {
-                const NameValue = document.getElementById('new-client__name');
-                const SurnameValue = document.getElementById('new-client__surname');
-                const LastnameValue = document.getElementById('new-client__lastname');
-                const Contacts = document.getElementsByClassName('new-client-contacts__item');
-                const ErrorsContainer = document.getElementById('new-client-bottom__errors');
-
-                const Client = ValidateClientForm(NameValue, SurnameValue, LastnameValue, Contacts, ErrorsContainer);
-                if (Client){
-                    PostClient(Client);
-                };
-                
-                    
-            });
+        addNewClientBtn.addEventListener('click', ()=> {
+            addNewClientForm();
         });
 
-        const SearchClientInput = document.getElementById('search_input');
-        SearchClientInput.addEventListener('change', GetClients);
+        const searchClientInput = document.getElementById('search_input');
+        searchClientInput.addEventListener('change', getClients);
 
     };
 
-    CreateApp();
+    createApp();
 });
 
-export function ValidateClientForm(NameValue, SurnameValue, LastnameValue, Contacts, ErrorsContainer){
-    const ContactsObject = [];
+export function validateClientForm(nameValue, surnameValue, lastNameValue, contacts, errorsContainer){
+    const contactsObject = [];
 
-    if (!NameValue.value.trim() || !SurnameValue.value.trim()){
-        ErrorsContainer.setAttribute('style', 'display:block')
-        ErrorsContainer.textContent = 'Имя и Фамилия обязательны для заполнения!'
-        NameValue.setAttribute('style', 'border-bottom: 1px solid #F06A4D')
-        SurnameValue.setAttribute('style', 'border-bottom: 1px solid #F06A4D')
+    if (!nameValue.value.trim() || !surnameValue.value.trim()){
+        errorsContainer.setAttribute('style', 'display:block')
+        errorsContainer.textContent = 'Имя и Фамилия обязательны для заполнения!'
+        nameValue.setAttribute('style', 'border-bottom: 1px solid #F06A4D')
+        surnameValue.setAttribute('style', 'border-bottom: 1px solid #F06A4D')
 
-        NameValue.addEventListener('change', ()=> {
-                NameValue.setAttribute('style', 'border-bottom: 1px solid #B0B0B0');
+        nameValue.addEventListener('change', ()=> {
+                nameValue.setAttribute('style', 'border-bottom: 1px solid #B0B0B0');
             })
         
-        SurnameValue.addEventListener('change', ()=> {
-            SurnameValue.setAttribute('style', 'border-bottom: 1px solid #B0B0B0');
+        surnameValue.addEventListener('change', ()=> {
+            surnameValue.setAttribute('style', 'border-bottom: 1px solid #B0B0B0');
         })
 
 
     } else {
 
-        for (const i_contact of Contacts) {
-            const Type = i_contact.childNodes[0].value;
-            const Value = i_contact.childNodes[2].value;
+        for (const i_contact of contacts) {
+            const type = i_contact.childNodes[0].value;
+            const value = i_contact.childNodes[2].value;
 
-            ContactsObject.push({'type': Type, 'value': Value});
+            contactsObject.push({'type': type, 'value': value});
             
         };
         
-        const NewClient = {name: NameValue.value.trim(), surname: SurnameValue.value.trim(), lastName:LastnameValue.value.trim(), contacts:ContactsObject};
-        return NewClient;
+        const newClient = {name: nameValue.value.trim(), surname: surnameValue.value.trim(), lastName:lastNameValue.value.trim(), contacts:contactsObject};
+        return newClient;
     };
 }
 
-export function SortedClients(clients){
+export function sortedClients(clients){
     const items = clients.sort((a, b) => a.id - b.id);
 
-    const IDBtn = document.getElementById('id_sort');
-    IDBtn.addEventListener('click', ()=> {
-        IDBtn.classList.toggle('id_down');
-        if (IDBtn.classList.contains('id_down')){
+
+    const idBtn = document.getElementById('id_sort');
+    idBtn.addEventListener('click', sort_id)
+
+    function sort_id(){
+        idBtn.classList.toggle('id_down');
+        if (idBtn.classList.contains('id_down')){
             const id_items = clients.sort((a, b) => b.id - a.id);
-            CreateClientsTable(id_items);
+            createClientsTable(id_items);
         }else{
             const id_items = clients.sort((a, b) => a.id - b.id);
-            CreateClientsTable(id_items);
+            createClientsTable(id_items);
         }
-    })
+    }
 
-    const NameBtn = document.getElementById('name_sort');
-    NameBtn.addEventListener('click', ()=> {
-        NameBtn.classList.toggle('name_up');
-        if (NameBtn.classList.contains('name_up')){
+
+    const nameBtn = document.getElementById('name_sort');
+    nameBtn.addEventListener('click', ()=> {
+        nameBtn.classList.toggle('name_up');
+        if (nameBtn.classList.contains('name_up')){
             const name_items = clients.sort((a, b) => {
                 const name1 = a.surname.toUpperCase();
                 const name2 = b.surname.toUpperCase();
@@ -105,7 +92,7 @@ export function SortedClients(clients){
                   }
                   return 0;
             })
-            CreateClientsTable(name_items);
+            createClientsTable(name_items);
         }else{
             const name_items = clients.sort((a, b) => {
                 const name1 = a.surname.toUpperCase();
@@ -118,54 +105,54 @@ export function SortedClients(clients){
                   }
                   return 0;
             })
-            CreateClientsTable(name_items);
+            createClientsTable(name_items);
         }
     })
 
-    const CreatedBtn = document.getElementById('created_btn');
-    CreatedBtn.addEventListener('click', ()=> {
-        CreatedBtn.classList.toggle('created_down');
-        if (CreatedBtn.classList.contains('created_down')){
+    const createdBtn = document.getElementById('created_btn');
+    createdBtn.addEventListener('click', ()=> {
+        createdBtn.classList.toggle('created_down');
+        if (createdBtn.classList.contains('created_down')){
             const created_items = clients.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            CreateClientsTable(created_items);
+            createClientsTable(created_items);
         }else{
             const created_items = clients.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            CreateClientsTable(created_items);
+            createClientsTable(created_items);
         }
     })
 
-    const UpdatedBtn = document.getElementById('updated_btn');
-    UpdatedBtn.addEventListener('click', ()=> {
-        UpdatedBtn.classList.toggle('updated_down');
-        if (UpdatedBtn.classList.contains('updated_down')){
+    const updatedBtn = document.getElementById('updated_btn');
+    updatedBtn.addEventListener('click', ()=> {
+        updatedBtn.classList.toggle('updated_down');
+        if (updatedBtn.classList.contains('updated_down')){
             const updated_items = clients.sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
-            CreateClientsTable(updated_items);
+            createClientsTable(updated_items);
         }else{
             const updated_items = clients.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-            CreateClientsTable(updated_items);
+            createClientsTable(updated_items);
         }
     })
 
-    CreateClientsTable(items);
+    createClientsTable(items);
 };
 
-let TimeoutId = null;
-export function ChangeDelay(clients) {
+let timeoutId = null;
+export function changeDelay(clients) {
 
-    clearTimeout(TimeoutId);
-    const SearchInput = document.getElementById('search_input');
-    function Search() {
+    clearTimeout(timeoutId);
+    const searchInput = document.getElementById('search_input');
+    function search() {
 
-        function FilterBySubstrOfName(client){
-            const InputValue = SearchInput.value;
-            if (client.surname.includes(InputValue) || client.name.includes(InputValue) || client.lastName.includes(InputValue)) {
+        function filterBySubstrOfName(client){
+            const inputValue = searchInput.value;
+            if (client.surname.includes(inputValue) || client.name.includes(inputValue) || client.lastName.includes(inputValue)) {
                 return true;
                 };
                 return false;
         };
-        const FilteredArray = clients.filter(FilterBySubstrOfName);
-        CreateClientsTable(FilteredArray);
+        const FilteredArray = clients.filter(filterBySubstrOfName);
+        createClientsTable(FilteredArray);
     };
 
-    TimeoutId = setTimeout(Search, 300);
+    timeoutId = setTimeout(search, 300);
 };

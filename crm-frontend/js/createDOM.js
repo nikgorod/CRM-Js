@@ -1,83 +1,87 @@
-import {RemoveClient, GetClient, UpdateClient} from './api.js';
-import {ValidateClientForm} from './app.js'
+import {removeClient, getClient, updateClient, postClient} from './api.js';
+import {validateClientForm} from './app.js'
 
-function Shadow(){
-    const ShadowBox = document.getElementById('shadow-box');
-    ShadowBox.setAttribute('style', 'display: block;')
+function shadow(){
+    const shadowBox = document.getElementById('shadow-box');
+    shadowBox.setAttribute('style', 'display: block;')
 }
 
-function RemoveShadow(){
-    const ShadowBox = document.getElementById('shadow-box');
-    ShadowBox.setAttribute('style', 'display: none;')
+export function removeShadow(){
+    const shadowBox = document.getElementById('shadow-box');
+    shadowBox.setAttribute('style', 'display: none;')
 }
 
-function CreateContactItem(Clients_contacts, type=null, value=null) {
-    const ContactsVarsList = ['Телефон', 'Vk', 'Facebook', 'Email', 'Другое']; 
+function createContactItem(clients_contacts, type=null, value=null) {
+    const contactsVarsList = ['Телефон', 'Vk', 'Facebook', 'Email', 'Другое']; 
 
-    const NewClientContact = document.createElement('li');
-    NewClientContact.classList.add('new-client-contacts__item');
+    const newClientContact = document.createElement('li');
+    newClientContact.classList.add('new-client-contacts__item');
 
-    const NewClientInput = document.createElement('input');
-    NewClientInput.classList.add('new-client-contacts__input');
-    NewClientInput.setAttribute('list', 'contacts');
-    NewClientInput.setAttribute('name', 'contacts');
+    const newClientInput = document.createElement('input');
+    newClientInput.setAttribute('value', 'Телефон')
+    newClientInput.classList.add('new-client-contacts__input');
+    newClientInput.setAttribute('list', 'contacts');
+    newClientInput.setAttribute('name', 'contacts');
 
-    const DataList = document.createElement('datalist');
-    DataList.setAttribute('id', 'contacts')
+    const dataList = document.createElement('datalist');
+    dataList.setAttribute('id', 'contacts')
 
-    for (const i_contact of ContactsVarsList) {
-        const NewOption = document.createElement('option');
-        NewOption.classList.add('contacts__element');
-        NewOption.value = i_contact;
-
-        DataList.append(NewOption);
+    for (const i_contact of contactsVarsList) {
+        const newOption = document.createElement('option');
+        newOption.classList.add('contacts__element');
+        newOption.value = i_contact;
+        dataList.append(newOption);
     }
 
-    const NewClientValueInput = document.createElement('input');
-    NewClientValueInput.classList.add('new-client-contacts__input_alert');
+    const newClientValueInput = document.createElement('input');
+    newClientValueInput.classList.add('new-client-contacts__input_alert');
     if(type && value) {
-        NewClientValueInput.value = value;
-        NewClientInput.value = type;
+        newClientValueInput.value = value;
+        newClientInput.value = type;
     }
-    NewClientValueInput.setAttribute('placeholder', 'Введите данные контакта');
-    NewClientValueInput.addEventListener('click', ()=>{
-        if (NewClientInput.value == 'Телефон'){
-            NewClientValueInput.setAttribute('id', 'phone')
+    newClientValueInput.setAttribute('placeholder', 'Введите данные контакта');
+    newClientValueInput.addEventListener('click', ()=>{
+        if (newClientInput.value == 'Телефон'){
+            const maskOptions = { // создаем объект параметров
+                mask: '+{7}(000)000-00-00' // задаем единственный параметр mask
+            }
+            IMask(newClientValueInput, maskOptions)
         }
     })
 
-    const NewClientContactRemoveBtn = document.createElement('button');
-    NewClientContactRemoveBtn.classList.add('new-client-contacts__remove-btn');
-    NewClientContactRemoveBtn.setAttribute('id', 'new-client-contacts__remove-btn');
-    tippy(NewClientContactRemoveBtn, {
+    const newClientContactRemoveBtn = document.createElement('button');
+    newClientContactRemoveBtn.classList.add('new-client-contacts__remove-btn');
+    newClientContactRemoveBtn.setAttribute('id', 'new-client-contacts__remove-btn');
+    tippy(newClientContactRemoveBtn, {
         content: "Удалить контакт",
     })
 
-    NewClientContactRemoveBtn.addEventListener('click', ()=> {
-        Clients_contacts.removeChild(NewClientContact);
+    newClientContactRemoveBtn.addEventListener('click', ()=> {
+        clients_contacts.removeChild(newClientContact);
 
     });
 
-    NewClientContact.append(NewClientInput);
-    NewClientContact.append(DataList);
-    NewClientContact.append(NewClientValueInput);
-    NewClientContact.append(NewClientContactRemoveBtn);
+    newClientContact.append(newClientInput);
+    newClientContact.append(dataList);
+    newClientContact.append(newClientValueInput);
+    newClientContact.append(newClientContactRemoveBtn);
 
-    Clients_contacts.append(NewClientContact);
+    clients_contacts.append(newClientContact);
 };
 
-export function AddNewClientForm(){
-const newClientContainer = document.getElementById('new-client-id');
+export function addNewClientForm(){
+    const newClientContainer = document.getElementById('new-client-id');
     newClientContainer.setAttribute('style', 'display:block;');
-    Shadow();
+    shadow();
 
     const newContactBtn = document.getElementById('new-client-contacts__btn');
-    const newClientsContacts = document.getElementById('new-client-contacts__items');
+    const newClientsContacts = document.getElementById('contacts-list');
     const newClientContactErrors = document.getElementById('new-client-bottom__errors');
 
+
     function add_contact(){
-        if (newClientsContacts.childNodes.length <= 12) {
-            CreateContactItem(newClientsContacts);
+        if (newClientsContacts.childNodes.length <= 10) {
+            createContactItem(newClientsContacts);
         }else {
     
             newClientContactErrors.textContent = 'Ошибка: Вы не можете добавить более 10 контактов!';
@@ -86,92 +90,143 @@ const newClientContainer = document.getElementById('new-client-id');
     }
     newContactBtn.addEventListener('click', add_contact);
 
+    const saveClientBtn = document.getElementById('new-client-save-btn');
+
+    function save_client(){
+        const nameValue = document.getElementById('new-client__name');
+        const surnameValue = document.getElementById('new-client__surname');
+        const lastNameValue = document.getElementById('new-client__lastname');
+        const contacts = document.getElementsByClassName('new-client-contacts__item');
+        const errorsContainer = document.getElementById('new-client-bottom__errors');
+
+        const client = validateClientForm(nameValue, surnameValue, lastNameValue, contacts, errorsContainer);
+        if (client){
+            newClientsContacts.innerHTML = '';
+            postClient(client, [{button: saveClientBtn, action: save_client}, {button: newContactBtn, action: add_contact}]);
+        };
+    }
+
+    saveClientBtn.addEventListener('click', save_client)
+
     const newClientExit = document.getElementById('new-client__exit-btn-id');
     const newClientCancel = document.getElementById('new-client-cancel-btn');
-    const ContactsList = document.getElementById('contacts-list');
     [newClientExit, newClientCancel].forEach(function(elem) {
         elem.addEventListener('click', ()=> {
         newClientContainer.setAttribute('style', 'display:none;');
         newContactBtn.removeEventListener('click', add_contact);
+        saveClientBtn.removeEventListener('click', save_client);
         newClientContactErrors.innerHTML = '';
-        RemoveShadow();
+        removeShadow();
         });
     });
+
 };
 
 
-export function AddChangeClientForm(client){
-    const ChangeClientContainer = document.getElementById('change-client-id');
-    Shadow();
-    ChangeClientContainer.setAttribute('style', 'display:block;');
+export function addChangeClientForm(client){
+    const changeClientContainer = document.getElementById('change-client-id');
+    shadow();
+    changeClientContainer.setAttribute('style', 'display:block;');
 
-    const ChangeClientExit = document.getElementById('change-client__exit-btn-id');
+    const changeClientID = document.getElementById('change-client_ID');
+    changeClientID.textContent = `ID: ${client.id}`
 
-    ChangeClientExit.addEventListener('click', ()=>{
-        ChangeClientContainer.setAttribute('style', 'display:none;');
-        RemoveShadow();
-        ContactsChangeList.innerHTML = '';
-    })
+    const changeClientSurName = document.getElementById('change-client__surname');
+    const changeClientName = document.getElementById('change-client__name');
+    const changeClientLastName = document.getElementById('change-client__lastname');
+    const changeClientErrors = document.getElementById('change-client-bottom__errors');
 
-    const ChangeClientID = document.getElementById('change-client_ID');
-    ChangeClientID.textContent = `ID: ${client.id}`
+    changeClientName.value = client.name
+    changeClientSurName.value = client.surname
+    changeClientLastName.value = client.lastName
 
-    const ChangeClientSurName = document.getElementById('change-client__surname');
-    const ChangeClientName = document.getElementById('change-client__name');
-    const ChangeClientLastName = document.getElementById('change-client__lastname');
-    const ChangeClientErrors = document.getElementById('change-client-bottom__errors');
+    const contactsChangeList = document.getElementById('change-contacts-list');
 
-    ChangeClientName.value = client.name
-    ChangeClientSurName.value = client.surname
-    ChangeClientLastName.value = client.lastName
-
-    const AddContactBtn = document.getElementById('change-client-contacts__btn');
-    const ContactsChangeList = document.getElementById('change-contacts-list');
-    AddContactBtn.addEventListener('click', ()=>{
-        CreateContactItem(ContactsChangeList);
-    })
 
     for (const i_contact of client.contacts) {
-        CreateContactItem(ContactsChangeList, i_contact.type, i_contact.value)
+        createContactItem(contactsChangeList, i_contact.type, i_contact.value)
     };
 
-    const ConfirmChangesBtn = document.getElementById('change-client-save-btn');
-    ConfirmChangesBtn.addEventListener('click', ()=> {
-        const Contacts = document.getElementsByClassName('new-client-contacts__item');
-        const Client = ValidateClientForm(ChangeClientName, ChangeClientSurName, ChangeClientLastName, Contacts, ChangeClientErrors);
-        if (Client) {
-            UpdateClient(Client, client.id);
-        }
-    })
+    const addContactBtn = document.getElementById('change-client-contacts__btn');
 
-    const RemoveClientBtn = document.getElementById('change-client-del-btn');
-    RemoveClientBtn.addEventListener('click', ()=>{
-        RemoveClient(client.id);
+
+    function add_contact(){
+        if (contactsChangeList.childNodes.length <= 10) {
+            createContactItem(contactsChangeList);
+        }else {
+    
+            changeClientErrors.textContent = 'Ошибка: Вы не можете добавить более 10 контактов!';
+            changeClientErrors.setAttribute('style', 'display:block;')
+        }
+    }
+
+    addContactBtn.addEventListener('click', add_contact);
+
+
+    const confirmChangesBtn = document.getElementById('change-client-save-btn');
+
+    function confirm_changes(){
+        const contacts = document.getElementsByClassName('new-client-contacts__item');
+        const client_valid = validateClientForm(changeClientName, changeClientSurName, changeClientLastName, contacts, changeClientErrors);
+        if (client_valid) {
+            contactsChangeList.innerHTML = '';
+            updateClient(client_valid, client.id, [{button: confirmChangesBtn, action: confirm_changes}, 
+                {button: addContactBtn, action: add_contact}, {button: removeClientBtn, action: remove_client}]);
+        }
+    }
+
+    confirmChangesBtn.addEventListener('click', confirm_changes);
+
+    const removeClientBtn = document.getElementById('change-client-del-btn');
+
+    function remove_client(){
+        confirmChangesBtn.removeEventListener('click', confirm_changes);
+        changeClientContainer.setAttribute('style', 'display:none;');
+        contactsChangeList.innerHTML = '';
+        removeShadow();
+        removeClient(client.id, removeClientBtn, remove_client);
+    }
+    removeClientBtn.addEventListener('click', remove_client);
+
+    const changeClientExit = document.getElementById('change-client__exit-btn-id');
+
+    changeClientExit.addEventListener('click', ()=>{
+        addContactBtn.removeEventListener('click', add_contact);
+        confirmChangesBtn.removeEventListener('click', confirm_changes);
+        removeClientBtn.removeEventListener('click', remove_client);
+        changeClientContainer.setAttribute('style', 'display:none;');
+        contactsChangeList.innerHTML = '';
+        changeClientErrors.innerHTML = '';
+        removeShadow();
+        
     })
 }
 
-function AddDeleteClientForm(id){
-    const RemoveClientContainer = document.getElementById('remove-client')
-    Shadow();
-    RemoveClientContainer.setAttribute('style', 'display:block;')
+function addDeleteClientForm(id){
+    const removeClientContainer = document.getElementById('remove-client')
+    shadow();
+    removeClientContainer.setAttribute('style', 'display:block;')
 
-    const RemoveClientExit = document.getElementById('remove-client__exit-btn');
-    const RemoveClientCancel = document.getElementById('remove-client-cancel-btn');
+    function remove_client(){
+        removeClient(id, removeClientConfirm, remove_client);
+    };
 
-    [RemoveClientExit, RemoveClientCancel].forEach(function(elem) {
+    const removeClientConfirm = document.getElementById('remove-client-del-btn');
+    removeClientConfirm.addEventListener('click', remove_client)
+
+    const removeClientExit = document.getElementById('remove-client__exit-btn');
+    const removeClientCancel = document.getElementById('remove-client-cancel-btn');
+
+    [removeClientExit, removeClientCancel].forEach(function(elem) {
         elem.addEventListener('click', ()=> {
-        RemoveClientContainer.setAttribute('style', 'display:none;');
-        RemoveShadow();
+        removeClientContainer.setAttribute('style', 'display:none;');
+        removeClientConfirm.removeEventListener('click', remove_client);
+        removeShadow();
         });
     });
-
-    const RemoveClientConfirm = document.getElementById('remove-client-del-btn');
-    RemoveClientConfirm.addEventListener('click', ()=>{
-        RemoveClient(id)
-    })
 }
 
-export function CreateClientsTable(clients){
+export function createClientsTable(clients){
     const TBODY = document.getElementById('clients-table-body_id');
     TBODY.innerHTML = '';
 
@@ -183,94 +238,104 @@ export function CreateClientsTable(clients){
         ID.classList.add('id_td')
         ID.textContent = client.id
 
-        const Name = document.createElement('td');
-        Name.textContent = `${client.surname} ${client.name} ${client.lastName}`;
+        const name = document.createElement('td');
+        name.classList.add('name_td')
+        name.textContent = `${client.surname} ${client.name} ${client.lastName}`;
 
-        const Created_At = document.createElement('td');
+        const created_At = document.createElement('td');
+        created_At.classList.add('created_td')
         const createdDate = new Date(client.createdAt); 
-        const CreatedTime = document.createElement('span');
-        CreatedTime.classList.add('client-time')
-        CreatedTime.textContent =  `${createdDate.toLocaleTimeString().substring(0, 5)}`;
-        Created_At.textContent = `${createdDate.toLocaleDateString()}  `;
-        Created_At.append(CreatedTime);
+        const createdTime = document.createElement('span');
+        createdTime.classList.add('client-time')
+        createdTime.textContent =  `${createdDate.toLocaleTimeString().substring(0, 5)}`;
+        created_At.textContent = `${createdDate.toLocaleDateString()}  `;
+        created_At.append(createdTime);
 
-        const Updated_At = document.createElement('td');
+        const updated_At = document.createElement('td');
+        updated_At.classList.add('updated_td')
         const updatedDate = new Date(client.updatedAt);
-        const UpdatedTime = document.createElement('span');
-        UpdatedTime.classList.add('client-time')
-        UpdatedTime.textContent =  `${updatedDate.toLocaleTimeString().substring(0, 5)}`;
-        Updated_At.textContent = `${updatedDate.toLocaleDateString()}  `;
-        Updated_At.append(UpdatedTime)
+        const updatedTime = document.createElement('span');
+        updatedTime.classList.add('client-time')
+        updatedTime.textContent =  `${updatedDate.toLocaleTimeString().substring(0, 5)}`;
+        updated_At.textContent = `${updatedDate.toLocaleDateString()}  `;
+        updated_At.append(updatedTime)
 
 
-        const Contacts = document.createElement('td');
-        Contacts.setAttribute('style', 'max-width: 100px')
-        const ContactsList = document.createElement('ul');
-        ContactsList.classList.add('clients_contacts_list')
+        const contacts = document.createElement('td');
+        contacts.classList.add('contacts_td')
+        contacts.setAttribute('style', 'max-width: 100px')
+        const contactsList = document.createElement('ul');
+        contactsList.classList.add('clients_contacts_list')
 
         for (const i_contact of client.contacts){
-            const ContactsItem = document.createElement('li');
-            ContactsItem.classList.add('contact');
-            tippy(ContactsItem, {
+            const contactsItem = document.createElement('li');
+            contactsItem.classList.add('contact');
+            tippy(contactsItem, {
                 content: `${i_contact.type}: ${i_contact.value}`,
                 interactive: true,
               });
             switch (i_contact.type){
                 case 'Телефон':
-                    ContactsItem.classList.add('phone_contact');
+                    contactsItem.classList.add('phone_contact');
                     break
                 case 'Vk':
-                    ContactsItem.classList.add('vk_contact');
+                    contactsItem.classList.add('vk_contact');
                     break
                 case 'Facebook':
-                    ContactsItem.classList.add('facebook_contact');
+                    contactsItem.classList.add('facebook_contact');
                     break
                 case 'Email':
-                    ContactsItem.classList.add('email_contact');
+                    contactsItem.classList.add('email_contact');
                     break
                 default:
-                    ContactsItem.classList.add('alert_contact');
+                    contactsItem.classList.add('alert_contact');
                     break
             }
 
-            ContactsList.append(ContactsItem);
+            contactsList.append(contactsItem);
         }
 
-        Contacts.append(ContactsList);
+        contacts.append(contactsList);
 
-        const Actions = document.createElement('td');
-        Actions.setAttribute('style', 'padding-left: 30px;')
-        const ChangeAction = document.createElement('button');
-        ChangeAction.textContent = 'Изменить';
-        ChangeAction.setAttribute('id', 'change-client-btn');
+        const actions = document.createElement('td');
+        actions.setAttribute('style', 'padding-left: 30px;')
+        const changeAction = document.createElement('button');
+        changeAction.textContent = 'Изменить';
+        changeAction.setAttribute('id', 'change-client-btn');
         
-        tippy(ChangeAction, {
+        tippy(changeAction, {
             content: `${window.location.href.split('#')[0]}#${client.id}`,
             interactive: true,
             maxWidth: 'none',
           });
-        const DeleteAction = document.createElement('button');
-        DeleteAction.textContent = 'Удалить';
-        DeleteAction.setAttribute('id', 'remove-client-btn');
-        Actions.append(ChangeAction, DeleteAction);
+        const deleteAction = document.createElement('button');
+        deleteAction.textContent = 'Удалить';
+        deleteAction.setAttribute('id', 'remove-client-btn');
+        actions.append(changeAction, deleteAction);
 
-        DeleteAction.addEventListener('click', ()=> {
-            AddDeleteClientForm(client.id);
+        deleteAction.addEventListener('click', ()=> {
+            addDeleteClientForm(client.id);
         });
 
-        ChangeAction.addEventListener('click', ()=>{
-            GetClient(client.id);
+        changeAction.addEventListener('click', ()=>{
+            getClient(client.id);
 
         });
 
-        row.append(ID, Name, Created_At, Updated_At, Contacts, Actions);
+        row.append(ID, name, created_At, updated_At, contacts, actions);
 
         TBODY.append(row);
     };
 };
 
 
-export function ServerErrors(NewClientContactErrors, response){
-    NewClientContactErrors.textContent = `Ошибка: ${response.status} ${response.statusText}`;
-    NewClientContactErrors.setAttribute('style', 'display:block;')
+export function serverErrors(newClientContactErrors, response){
+    if (response.errors){
+        for (const i_error of response.errors){
+            newClientContactErrors.textContent = `Ошибка: ${i_error.message}`;
+        }
+    }else{
+        newClientContactErrors.textContent = `Ошибка: Что-то пошло не так...`;
+    }
+    newClientContactErrors.setAttribute('style', 'display:block;')
 }

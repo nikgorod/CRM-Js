@@ -3,12 +3,22 @@ import {sortedClients, changeDelay} from './app.js'
 
 const SERVER_URL = 'http://localhost:3000/api/clients'
 
-function response_status(response, res, errorsContainer, container, actions_array){
+function response_status(response, res, errorsContainer, container, actions_array, contactsArray, valuesArray=null){
     if (Number(response.status) != 200 && Number(response.status) != 201) {
         serverErrors(errorsContainer, res);
     } else if (Number(response.status) == 200 || Number(response.status) == 201) {
         for (const i_action of actions_array){
             i_action.button.removeEventListener('click', i_action.action)
+        }
+
+        for (const i_contact of contactsArray){
+            i_contact.innerHTML = '';
+        }
+
+        if (valuesArray){
+            for (const i_value of valuesArray){
+                i_value.value = '';
+            }
         }
 
         container.setAttribute('style', 'display:none;');
@@ -17,7 +27,7 @@ function response_status(response, res, errorsContainer, container, actions_arra
     }
 }
 
-export async function postClient(newClient, actions_array){
+export async function postClient(newClient, actions_array, contactsArray, valuesArray){
     const response = await fetch(SERVER_URL, {
         method:'POST',
         headers:{'Content-Type': 'application/json'},
@@ -28,7 +38,7 @@ export async function postClient(newClient, actions_array){
 
     const res = await response.json();
 
-    response_status(response, res, newClientContactErrors, newClientContainer, actions_array);
+    response_status(response, res, newClientContactErrors, newClientContainer, actions_array, contactsArray, valuesArray);
 };
 
 export async function getClients(search=null){
@@ -63,7 +73,7 @@ export async function removeClient(id, btn, action){
     getClients(null);
 }
 
-export async function updateClient(client, id, actions_array){
+export async function updateClient(client, id, actions_array, contactsArray){
     const response = await fetch(`${SERVER_URL}/${id}`, {
         method:'PATCH',
         headers:{'Content-Type': 'application/json'},
@@ -75,5 +85,5 @@ export async function updateClient(client, id, actions_array){
     const changeClientContactErrors = document.getElementById('change-client-bottom__errors');
     const changeClientContainer = document.getElementById('change-client-id');
 
-    response_status(response, res, changeClientContactErrors, changeClientContainer, actions_array)
+    response_status(response, res, changeClientContactErrors, changeClientContainer, actions_array, contactsArray)
 }

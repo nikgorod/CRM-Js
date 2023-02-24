@@ -91,18 +91,20 @@ export function addNewClientForm(){
     newContactBtn.addEventListener('click', add_contact);
 
     const saveClientBtn = document.getElementById('new-client-save-btn');
+    const nameValue = document.getElementById('new-client__name');
+    const surnameValue = document.getElementById('new-client__surname');
+    const lastNameValue = document.getElementById('new-client__lastname');
 
     function save_client(){
-        const nameValue = document.getElementById('new-client__name');
-        const surnameValue = document.getElementById('new-client__surname');
-        const lastNameValue = document.getElementById('new-client__lastname');
+
         const contacts = document.getElementsByClassName('new-client-contacts__item');
         const errorsContainer = document.getElementById('new-client-bottom__errors');
 
         const client = validateClientForm(nameValue, surnameValue, lastNameValue, contacts, errorsContainer);
         if (client){
-            newClientsContacts.innerHTML = '';
-            postClient(client, [{button: saveClientBtn, action: save_client}, {button: newContactBtn, action: add_contact}]);
+
+            postClient(client, [{button: saveClientBtn, action: save_client}, {button: newContactBtn, action: add_contact}], 
+                [newClientsContacts, newClientContactErrors], [nameValue, surnameValue, lastNameValue]);
         };
     }
 
@@ -113,12 +115,20 @@ export function addNewClientForm(){
     [newClientExit, newClientCancel].forEach(function(elem) {
         elem.addEventListener('click', ()=> {
         newClientContainer.setAttribute('style', 'display:none;');
-        newContactBtn.removeEventListener('click', add_contact);
-        saveClientBtn.removeEventListener('click', save_client);
-        newClientContactErrors.innerHTML = '';
+        cleanData();
         removeShadow();
         });
     });
+
+    function cleanData(){
+        newContactBtn.removeEventListener('click', add_contact);
+        saveClientBtn.removeEventListener('click', save_client);
+        newClientContactErrors.innerHTML = '';
+        newClientsContacts.innerHTML = '';
+        nameValue.value = '';
+        surnameValue.value = '';
+        lastNameValue.value = '';
+    }
 
 };
 
@@ -169,9 +179,8 @@ export function addChangeClientForm(client){
         const contacts = document.getElementsByClassName('new-client-contacts__item');
         const client_valid = validateClientForm(changeClientName, changeClientSurName, changeClientLastName, contacts, changeClientErrors);
         if (client_valid) {
-            contactsChangeList.innerHTML = '';
             updateClient(client_valid, client.id, [{button: confirmChangesBtn, action: confirm_changes}, 
-                {button: addContactBtn, action: add_contact}, {button: removeClientBtn, action: remove_client}]);
+                {button: addContactBtn, action: add_contact}, {button: removeClientBtn, action: remove_client}], [changeClientErrors, contactsChangeList]);
         }
     }
 

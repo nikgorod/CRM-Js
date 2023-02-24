@@ -250,7 +250,7 @@ body {
 
 .clients_contacts_list{
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     flex-wrap: wrap;
     list-style: none;
     margin: 0;
@@ -261,6 +261,8 @@ body {
     width: 16px;
     height: 16px;
     background-repeat: no-repeat;
+    margin-left: 3px;
+    margin-bottom: 3px;
 }
 
 .phone_contact {
